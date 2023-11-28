@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webカメラのリアルタイム表示</title>
+    <style>
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .text-overlay {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 24px;
+            color: white;
+            animation: slideText 10s linear infinite;
+            text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+        }
+
+        @keyframes slideText {
+            0% {
+                left: 100%; /* 初期位置を右端に設定 */
+            }
+            100% {
+                left: -100%; /* 画面外に左に移動 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <video id="video" autoplay></video>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('video');
+            const textContainer = document.body;
+
+            const textList = ['キモ', '臭そう', 'こいつって人権あったっけ？', 'この顔で生きてて偉い（笑）', 'wwwwwwww', '最高', '死ねよ', '朝鮮人かな？']; // 表示させたいテキストのリスト
+            const textElements = [];
+
+            function createTextElement(text) {
+                const textElement = document.createElement('div');
+                textElement.className = 'text-overlay';
+                textElement.innerText = text;
+                textContainer.appendChild(textElement);
+                textElements.push(textElement);
+                return textElement;
+            }
+
+            function setRandomYPosition(element) {
+                const windowHeight = window.innerHeight;
+                const randomY = Math.floor(Math.random() * (windowHeight - 24)); // 24はフォントサイズ
+                element.style.top = `${randomY}px`;
+            }
+
+            function setRandomAnimationDelay(element) {
+                const randomDelay = Math.random() * 10; // 0から10秒のランダムな遅延
+                element.style.animationDelay = `-${randomDelay}s`;
+            }
+
+            function animateText(textElement) {
+                setRandomYPosition(textElement);
+                setRandomAnimationDelay(textElement);
+                textElement.addEventListener('animationiteration', () => {
+                    setRandomYPosition(textElement);
+                    setRandomAnimationDelay(textElement);
+                });
+            }
+
+            // カメラの映像を取得する
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    video.srcObject = stream;
+                })
+                .catch((error) => {
+                    console.error('カメラの起動に失敗しました:', error);
+                });
+
+            // テキストを生成しアニメーションさせる
+            textList.forEach((text) => {
+                const textElement = createTextElement(text);
+                animateText(textElement);
+            });
+
+            // ウィンドウのリサイズ時にもランダムなY軸位置を設定
+            window.addEventListener('resize', () => {
+                textElements.forEach((textElement) => {
+                    setRandomYPosition(textElement);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
